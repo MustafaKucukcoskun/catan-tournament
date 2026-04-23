@@ -40,14 +40,14 @@ export function Leaderboard({
   rows,
   roundLabel,
   skipTop = 0,
-  title = 'Standings',
+  title = 'Sıralama',
   titleStyle = 'plain',
 }: LeaderboardProps) {
   const visibleRows = skipTop > 0 ? rows.slice(skipTop) : rows;
-  // Position copy like "positions 4 — 10" in the Variant C right-hand eyebrow.
+  // Position copy like "sıralama 4 — 10" in the Variant C right-hand eyebrow.
   const positionsLabel =
     skipTop > 0 && visibleRows.length > 0
-      ? `positions ${skipTop + 1} — ${skipTop + visibleRows.length}`
+      ? `sıralama ${skipTop + 1} — ${skipTop + visibleRows.length}`
       : null;
 
   return (
@@ -97,7 +97,7 @@ export function Leaderboard({
 }
 
 function LeaderboardHeader() {
-  const headers = ['#', '', 'Player', 'Played', 'Wins', 'VP', 'Trend'];
+  const headers = ['#', '', 'Oyuncu', 'Oynanan', 'Galibiyet', 'VP', 'Trend'];
   return (
     <div
       className="grid items-center bg-[var(--color-bg-elevated)]"
@@ -262,7 +262,7 @@ function LeaderboardRowView({ row }: { row: LeaderboardRow }) {
                 }}
               >
                 <LiveDotInline size={6} />
-                live
+                canlı
               </span>
             )}
           </span>

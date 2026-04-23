@@ -41,22 +41,22 @@ export function StatsStrip({
   players, activeMatches, finishedMatches, avgVp, round, duration, hints,
 }: Props) {
   const cells: Cell[] = [
-    { key: 'players',  label: 'players',  value: String(players), hint: hints?.players },
+    { key: 'players',  label: 'oyuncular',  value: String(players), hint: hints?.players },
     {
-      key: 'active', label: 'active', value: String(activeMatches),
+      key: 'active', label: 'aktif', value: String(activeMatches),
       live: activeMatches > 0, hint: hints?.active,
     },
     {
-      key: 'finished', label: 'finished', value: String(finishedMatches),
+      key: 'finished', label: 'biten', value: String(finishedMatches),
       hint: hints?.finished, tint: 'seafoam',
     },
     {
-      key: 'avgVp', label: 'avg vp',
+      key: 'avgVp', label: 'ort. vp',
       value: avgVp && Number.isFinite(avgVp) ? avgVp.toFixed(1) : '—',
       hint: hints?.avgVp,
     },
-    { key: 'round', label: 'round', value: round, hint: hints?.round, tint: 'gold' },
-    { key: 'duration', label: 'duration', value: duration, hint: hints?.duration },
+    { key: 'round', label: 'tur', value: round, hint: hints?.round, tint: 'gold' },
+    { key: 'duration', label: 'süre', value: duration, hint: hints?.duration },
   ];
 
   return (

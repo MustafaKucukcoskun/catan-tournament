@@ -58,7 +58,7 @@ export function SessionClock({ startedAt, live = true, compact = false }: Props)
             fontWeight: 500,
           }}
         >
-          session
+          oturum
         </span>
       )}
       <span className="relative">

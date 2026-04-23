@@ -34,10 +34,10 @@ export function BracketView({ pods }: Props) {
       <section className="relative overflow-hidden rounded-[var(--radius-lg)] hairline bg-[var(--color-bg-surface)] py-16 px-8 text-center">
         <div className="inline-flex items-center gap-2 font-[var(--font-mono)] text-[11px] uppercase tracking-[0.16em] text-[var(--color-fg-muted)]">
           <span className="text-[var(--color-fg-subtle)]">⬡</span>
-          Elimination bracket
+          Eleme bracket&apos;i
         </div>
         <div className="mt-4 font-[var(--font-display)] italic text-[18px] text-[var(--color-fg-muted)]">
-          Awaiting qualifiers — the ladder appears here once the league rounds conclude.
+          Kazananlar bekleniyor — lig turları bittiğinde bracket burada açılır.
         </div>
       </section>
     );
@@ -50,18 +50,18 @@ export function BracketView({ pods }: Props) {
           className="m-0 font-[var(--font-display)] text-[var(--color-fg-primary)]"
           style={{ fontSize: 22, fontWeight: 600, letterSpacing: '-0.005em' }}
         >
-          Elimination bracket{' '}
+          Eleme bracket&apos;i{' '}
           <em
             className="text-[var(--color-accent-gold)]"
             style={{ fontWeight: 400, fontStyle: 'italic' }}
           >
-            — the ladder
+            — merdiven
           </em>
         </h2>
         <span
           className="font-[var(--font-mono)] uppercase tracking-[0.14em] text-[11px] text-[var(--color-fg-muted)]"
         >
-          {rounds.length} {rounds.length === 1 ? 'round' : 'rounds'}
+          {rounds.length} tur
         </span>
       </header>
 
@@ -75,7 +75,7 @@ export function BracketView({ pods }: Props) {
         {rounds.map((round, ri) => (
           <BracketColumn
             key={ri}
-            label={round[0]?.roundLabel ?? `Round ${ri + 1}`}
+            label={round[0]?.roundLabel ?? `Tur ${ri + 1}`}
             pods={round}
           />
         ))}
@@ -85,7 +85,7 @@ export function BracketView({ pods }: Props) {
           <div
             className="font-[var(--font-mono)] uppercase tracking-[0.14em] text-[10px] text-[var(--color-fg-muted)]"
           >
-            Championship
+            Şampiyonluk
           </div>
           <ChampionshipPanel rounds={rounds} />
         </div>
@@ -158,12 +158,12 @@ function PodCard({ pod }: { pod: BracketPod }) {
         </span>
         {isDone && (
           <span className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-muted)]">
-            concluded
+            biten
           </span>
         )}
         {pod.status === 'pending' && (
           <span className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.14em] text-[var(--color-fg-subtle)]">
-            pending
+            bekliyor
           </span>
         )}
       </header>
@@ -227,7 +227,7 @@ function PodCard({ pod }: { pod: BracketPod }) {
             color: 'var(--color-accent-gold)',
           }}
         >
-          {winner.name} advances
+          {winner.name} geçti
         </div>
       )}
     </article>
@@ -283,7 +283,7 @@ function ChampionshipPanel({ rounds }: { rounds: BracketPod[][] }) {
             className="relative font-[var(--font-mono)] text-[var(--color-accent-gold)] uppercase tracking-[0.16em]"
             style={{ fontSize: 10, fontWeight: 600 }}
           >
-            champion
+            şampiyon
           </div>
         </>
       ) : (
@@ -291,7 +291,7 @@ function ChampionshipPanel({ rounds }: { rounds: BracketPod[][] }) {
           className="relative font-[var(--font-display)] italic text-[var(--color-fg-muted)]"
           style={{ fontSize: 14, maxWidth: 180 }}
         >
-          Awaiting finalists
+          Finalistler bekleniyor
         </div>
       )}
     </div>
