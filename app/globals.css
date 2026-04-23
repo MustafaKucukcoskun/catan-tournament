@@ -87,8 +87,46 @@
 .animate-pulse-ember { animation: pulse-ember 1.2s ease-in-out infinite; }
 
 @keyframes spark-burst {
-  0%   { opacity: 0; transform: scale(0.8); }
-  50%  { opacity: 1; transform: scale(1.2); }
-  100% { opacity: 0; transform: scale(1); }
+  0%   { opacity: 1; transform: scale(1.0); }
+  100% { opacity: 0; transform: scale(1.4); }
 }
 .animate-spark { animation: spark-burst 600ms ease-out 1; }
+
+@keyframes gold-halo {
+  0%, 100% { box-shadow: 0 0 24px rgba(244, 185, 66, 0.30); }
+  50%      { box-shadow: 0 0 32px rgba(244, 185, 66, 0.50); }
+}
+.animate-gold-halo { animation: gold-halo 2s ease-in-out infinite; }
+
+@keyframes colon-flicker {
+  0%, 90%, 100% { color: inherit; }
+  45%           { color: var(--color-accent-gold); }
+}
+.animate-colon-flicker { animation: colon-flicker 1s steps(1) infinite; }
+
+@keyframes hex-glow-pulse {
+  0%, 100% { opacity: 0.48; }
+  50%      { opacity: 0.85; }
+}
+.animate-hex-glow { animation: hex-glow-pulse 2.4s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+
+@keyframes amber-wash {
+  0%, 100% { transform: translate(0, 0) scale(1);    opacity: 0.9; }
+  50%      { transform: translate(30px, -20px) scale(1.08); opacity: 1; }
+}
+@keyframes amber-wash-2 {
+  0%, 100% { transform: translate(0, 0) scale(1);    opacity: 0.7; }
+  50%      { transform: translate(-40px, 30px) scale(1.12); opacity: 0.9; }
+}
+.animate-amber-wash-a { animation: amber-wash 18s ease-in-out infinite; }
+.animate-amber-wash-b { animation: amber-wash-2 22s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-breath,
+  .animate-pulse-ember,
+  .animate-spark,
+  .animate-gold-halo,
+  .animate-colon-flicker,
+  .animate-amber-wash-a,
+  .animate-amber-wash-b { animation: none !important; }
+}

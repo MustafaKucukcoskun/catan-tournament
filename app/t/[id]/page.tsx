@@ -62,18 +62,115 @@ export default async function TournamentHome({ params, searchParams }: Props) {
     { key: 'bracket',     label: 'Bracket', href: `/t/${id}?tab=bracket` },
   ];
 
+  // Editorial hero — ported from the Claude Design export (Variant A hero
+  // band). Eyebrow is upper-mono with 0.22em tracking, title is Fraunces with
+  // an italic gold "emphasis" word, metadata is middot-separated.
+  const phase =
+    t.status === 'league'
+      ? { eyebrow: `${t.name} · round ${t.current_round}`, title: 'the league round', italic: 'league round' }
+      : t.status === 'elimination'
+        ? { eyebrow: `${t.name} · elimination ${t.current_round}`, title: 'the pressure round', italic: 'pressure round' }
+        : t.status === 'completed'
+          ? { eyebrow: `${t.name} · final`, title: 'the final standings', italic: 'final standings' }
+          : { eyebrow: `${t.name} · setup`, title: 'the setup', italic: 'setup' };
+
+  // Rough "tonight" / "this evening" copy based on current hour — purely
+  // editorial flourish, matches the kit's "tuesday evening" italic aside.
+  const hour = new Date().getHours();
+  const timeOfDay = hour < 12 ? 'morning session' : hour < 17 ? 'afternoon session' : 'evening session';
+  const durationText = t.started_at
+    ? (() => {
+        const ms = Date.now() - new Date(t.started_at).getTime();
+        const mins = Math.floor(ms / 60_000);
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return h > 0 ? `${h}h ${String(m).padStart(2, '0')}m` : `${m}m`;
+      })()
+    : '—';
+
   return (
     <Shell>
       <RealtimeWrapper tournamentId={id}>
-      <div className="space-y-6">
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="font-[var(--font-mono)] uppercase text-[11px] tracking-[0.12em] text-[var(--color-fg-muted)]">
-              {t.status === 'league' ? `Lig ${t.current_round}/${t.league_rounds}` :
-               t.status === 'elimination' ? `Eleme Tur ${t.current_round}` :
-               t.status === 'completed' ? 'Tamamlandı' : 'Kurulumda'}
-            </div>
-            <h1 className="text-4xl font-[var(--font-display)] mt-1">{t.name}</h1>
+      <div style={{ padding: '36px 36px 48px', maxWidth: 1440, margin: '0 auto' }} className="space-y-6">
+        {/* Editorial hero band */}
+        <div
+          className="pb-8"
+          style={{ borderBottom: '1px solid rgba(244,185,66,0.10)' }}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <span
+              className="font-[var(--font-mono)] text-[var(--color-fg-muted)]"
+              style={{
+                fontSize: 11,
+                textTransform: 'uppercase',
+                letterSpacing: '0.22em',
+              }}
+            >
+              {phase.eyebrow}
+            </span>
+            <span
+              aria-hidden
+              className="flex-1"
+              style={{
+                height: 1,
+                background:
+                  'linear-gradient(to right, rgba(244,185,66,0.30), transparent)',
+              }}
+            />
+          </div>
+          <h1
+            className="m-0 font-[var(--font-display)] text-[var(--color-fg-primary)]"
+            style={{
+              fontSize: 'clamp(40px, 6vw, 72px)',
+              fontWeight: 500,
+              letterSpacing: '-0.02em',
+              lineHeight: 1.02,
+            }}
+          >
+            {phase.title.replace(phase.italic, '').trim()}{' '}
+            <em
+              className="text-[var(--color-accent-gold)]"
+              style={{ fontWeight: 400, fontStyle: 'italic' }}
+            >
+              {phase.italic}
+            </em>
+          </h1>
+          <div className="mt-5 flex flex-wrap items-center" style={{ gap: 14 }}>
+            <span
+              className="font-[var(--font-body)] text-[var(--color-fg-muted)] italic"
+              style={{ fontSize: 15 }}
+            >
+              {timeOfDay}
+            </span>
+            <span style={{ color: 'var(--color-fg-subtle)' }}>·</span>
+            <span
+              className="font-[var(--font-body)] text-[var(--color-fg-muted)]"
+              style={{ fontSize: 15 }}
+            >
+              {t.total_players} players
+            </span>
+            <span style={{ color: 'var(--color-fg-subtle)' }}>·</span>
+            <span
+              className="inline-flex items-center font-[var(--font-body)] text-[var(--color-fg-muted)]"
+              style={{ fontSize: 15, gap: 8 }}
+            >
+              {activeMatches > 0 ? (
+                <>
+                  <span
+                    className="inline-block rounded-full animate-pulse-ember shrink-0"
+                    style={{
+                      width: 7,
+                      height: 7,
+                      background: 'var(--color-accent-live)',
+                      boxShadow: '0 0 10px var(--color-accent-live)',
+                    }}
+                  />
+                  {activeMatches} {activeMatches === 1 ? 'pod' : 'pods'} live
+                </>
+              ) : (
+                'no live pods'
+              )}
+            </span>
           </div>
         </div>
 
@@ -83,22 +180,34 @@ export default async function TournamentHome({ params, searchParams }: Props) {
           finishedMatches={finished}
           avgVp={avgVp}
           round={`${t.current_round}/${t.current_round_type === 'league' ? t.league_rounds : '∞'}`}
-          duration={t.started_at
-            ? `${Math.floor((Date.now() - new Date(t.started_at).getTime()) / 60000)}m`
-            : '—'}
+          duration={durationText}
         />
 
         <TabBar tabs={tabs} activeKey={tab} />
 
         {tab === 'leaderboard' && (
-          <div className="space-y-6">
+          <div className="space-y-10">
             {rows.length >= 3 && <PodiumBlock top3={rows.slice(0, 3)} />}
-            <Leaderboard rows={rows} />
+            <Leaderboard
+              rows={rows}
+              skipTop={rows.length >= 3 ? 3 : 0}
+              title="the field"
+              titleStyle="italic"
+              roundLabel={
+                rows.length >= 3 && rows.length > 3
+                  ? `positions 4 — ${rows.length}`
+                  : rows.length > 0
+                    ? `${rows.length} players`
+                    : undefined
+              }
+            />
           </div>
         )}
 
         {tab === 'active' && (
           <LiveTables
+            title="on the tables"
+            eyebrow={activeMatches > 0 ? `${activeMatches} live` : undefined}
             tables={(tables ?? [])
               .filter(mt => mt.status === 'live')
               .map(mt => ({
@@ -118,6 +227,8 @@ export default async function TournamentHome({ params, searchParams }: Props) {
 
         {tab === 'finished' && (
           <LiveTables
+            title="concluded matches"
+            variant="concluded"
             tables={(tables ?? [])
               .filter(mt => mt.status === 'completed')
               .map(mt => ({
