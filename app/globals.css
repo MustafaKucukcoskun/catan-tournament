@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,400i;9..144,600i&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@theme {
+  /* Background — WARM DARK (v3, brown-based) */
+  --color-bg-deep:      #1F1409;
+  --color-bg-surface:   #2F2217;
+  --color-bg-elevated:  #42311F;
+  --color-bg-highlight: #5A4228;
+
+  /* Foreground */
+  --color-fg-primary: #F2E4CA;
+  --color-fg-muted:   #A89880;
+  --color-fg-subtle:  #5A4A36;
+
+  /* Accents */
+  --color-accent-ember:   #E85D2E;
+  --color-accent-live:    #FF6B35;
+  --color-accent-gold:    #F4B942;
+  --color-accent-seafoam: #5EA88F;
+
+  /* Resource colors (saturated v3) */
+  --color-resource-wood:   #4A8D5F;
+  --color-resource-sheep:  #9AD380;
+  --color-resource-wheat:  #F2D250;
+  --color-resource-brick:  #D96638;
+  --color-resource-ore:    #7B8593;
+  --color-resource-desert: #E8CC9C;
+
+  /* Semantic */
+  --color-ok:    #6EE787;
+  --color-warn:  #FFB94D;
+  --color-error: #F26B5E;
+  --color-info:  #7BB8E8;
+
+  /* Typography */
+  --font-display: 'Fraunces', 'Cormorant Garamond', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', Menlo, Consolas, monospace;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  /* Easing / durations */
+  --ease-out:         cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring:      cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast:    150ms;
+  --duration-base:    200ms;
+  --duration-slow:    300ms;
+  --duration-kinetic: 800ms;
+  --duration-breath:  3000ms;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  html, body {
+    background: var(--color-bg-deep);
+    color: var(--color-fg-primary);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 24px;
   }
+  h1, h2, h3 { font-family: var(--font-display); }
+  code, .mono, tabular-nums { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Hairline utilities */
+@layer utilities {
+  .hairline { border: 1px solid rgba(244, 185, 66, 0.10); }
+  .hairline-strong { border: 1px solid rgba(244, 185, 66, 0.20); }
+  .glow-ember { box-shadow: 0 0 20px rgba(255, 107, 53, 0.35); }
+  .glow-gold { box-shadow: 0 0 24px rgba(244, 185, 66, 0.30); }
+  .glow-winner { box-shadow: 0 0 32px rgba(244, 185, 66, 0.50); }
+  .shadow-live { box-shadow: 0 0 0 1px var(--color-accent-live), 0 0 20px rgba(255, 107, 53, 0.35); }
 }
