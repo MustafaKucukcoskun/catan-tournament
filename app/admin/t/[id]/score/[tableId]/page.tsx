@@ -1,13 +1,15 @@
 import { Shell } from '@/components/layout/Shell';
 import { ScoreEntryForm } from '@/components/admin/ScoreEntryForm';
 import { getServerClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
+import { isAuthenticated } from '@/lib/auth/session';
+import { notFound, redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function ScorePage({ params }: {
   params: Promise<{ id: string; tableId: string }>
 }) {
+  if (!(await isAuthenticated())) redirect('/admin/login');
   const { id, tableId } = await params;
   const sb = getServerClient();
   const { data: mt } = await sb.from('match_tables').select('*').eq('id', tableId).single();
@@ -19,7 +21,7 @@ export default async function ScorePage({ params }: {
   const pMap = new Map((players ?? []).map(p => [p.id, p]));
 
   return (
-    <Shell>
+    <Shell variant="admin">
       <div className="space-y-6">
         <h1 className="text-3xl font-[var(--font-display)]">Masa {mt.table_number} — Skor Girişi</h1>
         <ScoreEntryForm

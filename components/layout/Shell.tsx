@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
-import { Sidebar, type SidebarTournament } from './Sidebar';
+import { PublicSidebar } from './PublicSidebar';
+import { AdminSidebar, type SidebarTournament } from './AdminSidebar';
 
 interface Props {
+  variant?: 'public' | 'admin';
   children: ReactNode;
   tournament?: SidebarTournament | null;
   liveCount?: number;
@@ -13,14 +15,28 @@ interface Props {
  * Two-column frame: 232px sidebar + flexible main column.
  * Main column scrolls independently, sits against a deep coffee-bean
  * bg with an optional faint hex-lattice watermark.
+ *
+ * `variant` selects which sidebar renders:
+ *   - `public` (default) → PublicSidebar (spectator nav only)
+ *   - `admin` → AdminSidebar (tournament director nav + admin footer)
+ *
+ * Public routes (`/`, `/archive`, `/t/[id]`, `/t/[id]/match/[tableId]`)
+ * must NOT pass `variant="admin"`. Admin routes (`/admin/*` except
+ * `/admin/login`) must pass `variant="admin"`.
  */
-export function Shell({ children, tournament, liveCount }: Props) {
+export function Shell({
+  variant = 'public',
+  children,
+  tournament,
+  liveCount,
+}: Props) {
+  const SidebarComponent = variant === 'admin' ? AdminSidebar : PublicSidebar;
   return (
     <div
       className="flex min-h-screen"
       style={{ background: '#1A1208', color: '#F2E4CA' }}
     >
-      <Sidebar tournament={tournament} liveCount={liveCount} />
+      <SidebarComponent tournament={tournament} liveCount={liveCount} />
       <main className="relative flex-1 overflow-x-hidden">
         {/* Warm hex-watermark wash — whispers Catan without shouting. */}
         <div

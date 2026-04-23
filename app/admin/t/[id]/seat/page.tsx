@@ -3,11 +3,13 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { PlayerAvatar } from '@/components/tournament/PlayerAvatar';
 import { getServerClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
+import { isAuthenticated } from '@/lib/auth/session';
+import { notFound, redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SeatingPage({ params }: { params: Promise<{ id: string }> }) {
+  if (!(await isAuthenticated())) redirect('/admin/login');
   const { id } = await params;
   const sb = getServerClient();
   const { data: t } = await sb.from('tournaments').select('*').eq('id', id).single();
@@ -22,11 +24,11 @@ export default async function SeatingPage({ params }: { params: Promise<{ id: st
   const pMap = new Map((players ?? []).map(p => [p.id, p]));
 
   return (
-    <Shell>
+    <Shell variant="admin">
       <div className="space-y-6">
         <h1 className="text-3xl font-[var(--font-display)]">Masaları Düzenle</h1>
         <div className="text-sm text-[var(--color-fg-muted)]">
-          MVP: oyuncuları elden veri tabanından sürükle. Drag-drop v2.
+          Sürükle-bırak ile oyuncu değişimi sonraki sürümde.
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {(tables ?? []).map(mt => (

@@ -1,11 +1,13 @@
 import { Shell } from '@/components/layout/Shell';
 import { PlayerRoster } from '@/components/admin/PlayerRoster';
 import { getServerClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
+import { isAuthenticated } from '@/lib/auth/session';
+import { notFound, redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function PlayersPage({ params }: { params: Promise<{ id: string }> }) {
+  if (!(await isAuthenticated())) redirect('/admin/login');
   const { id } = await params;
   const sb = getServerClient();
   const { data: t } = await sb.from('tournaments').select('*').eq('id', id).single();
@@ -13,7 +15,7 @@ export default async function PlayersPage({ params }: { params: Promise<{ id: st
   const { data: players } = await sb.from('players').select('id,name,seat_code').eq('tournament_id', id);
 
   return (
-    <Shell>
+    <Shell variant="admin">
       <div className="space-y-6">
         <div>
           <h1 className="text-4xl font-[var(--font-display)]">{t.name}</h1>
