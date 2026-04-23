@@ -5,6 +5,7 @@ import { PodiumBlock } from '@/components/tournament/PodiumBlock';
 import { StatsStrip } from '@/components/tournament/StatsStrip';
 import { LiveTables } from '@/components/tournament/LiveTables';
 import { BracketView } from '@/components/tournament/BracketView';
+import { RealtimeWrapper } from '@/components/tournament/RealtimeWrapper';
 import { getServerClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 
@@ -63,6 +64,7 @@ export default async function TournamentHome({ params, searchParams }: Props) {
 
   return (
     <Shell>
+      <RealtimeWrapper tournamentId={id}>
       <div className="space-y-6">
         <div className="flex items-end justify-between">
           <div>
@@ -160,6 +162,7 @@ export default async function TournamentHome({ params, searchParams }: Props) {
           />
         )}
       </div>
+      </RealtimeWrapper>
     </Shell>
   );
 }
