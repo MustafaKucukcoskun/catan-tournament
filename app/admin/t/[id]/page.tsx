@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { Shell } from '@/components/layout/Shell';
 import { getServerClient } from '@/lib/supabase/server';
-import { notFound } from 'next/navigation';
-import { advanceRound } from '@/app/actions/match';
+import { isAuthenticated } from '@/lib/auth/session';
+import { notFound, redirect } from 'next/navigation';
+import { AdvanceRoundButton } from '@/components/admin/AdvanceRoundButton';
 import {
   ArrowRight,
   Play,
@@ -59,9 +60,9 @@ function formatElapsed(startedAt: string | null): string {
 }
 
 function formatConcludedTime(completedAt: string | null): string {
-  if (!completedAt) return 'concluded';
+  if (!completedAt) return 'biten';
   const d = new Date(completedAt);
-  return `concluded ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `biten ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 export default async function AdminTournamentView({
@@ -69,6 +70,7 @@ export default async function AdminTournamentView({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  if (!(await isAuthenticated())) redirect('/admin/login');
   const { id } = await params;
   const sb = getServerClient();
 
@@ -171,16 +173,16 @@ export default async function AdminTournamentView({
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   })();
 
-  const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-  const eyebrow = `${weekday.toLowerCase()} · ${t.total_players} players · ${currentTables.length} pods`;
+  const weekday = new Date().toLocaleDateString('tr-TR', { weekday: 'long' });
+  const eyebrow = `${weekday.toLowerCase()} · ${t.total_players} oyuncu · ${currentTables.length} masa`;
   const heroTitle =
     t.status === 'setup'
-      ? 'Setup'
+      ? 'Kurulum'
       : t.status === 'elimination'
-        ? `Elimination · round ${t.current_round ?? 1}`
+        ? `Eleme · tur ${t.current_round ?? 1}`
         : t.status === 'completed'
-          ? 'Concluded'
-          : `Round ${t.current_round ?? 1}`;
+          ? 'Tamamlandı'
+          : `Tur ${t.current_round ?? 1}`;
 
   const sidebarTournament = {
     id: t.id,
@@ -192,7 +194,7 @@ export default async function AdminTournamentView({
   };
 
   return (
-    <Shell tournament={sidebarTournament} liveCount={liveCount}>
+    <Shell variant="admin" tournament={sidebarTournament} liveCount={liveCount}>
       {/* Top bar */}
       <header
         className="flex items-end justify-between gap-5 border-b px-9 pb-5 pt-7"
@@ -228,38 +230,30 @@ export default async function AdminTournamentView({
             className="inline-flex h-8 items-center gap-2 rounded-[6px] bg-transparent px-[14px] font-[var(--font-body)] text-[13px] font-semibold transition-colors hover:bg-[#3A2A1E] hover:text-[#F2E4CA]"
             style={{ color: '#A89880' }}
           >
-            Public view
+            Herkese açık görünüm
           </Link>
           <Link
             href={`/admin/t/${id}/settings`}
             className="inline-flex h-8 items-center gap-2 rounded-[6px] bg-transparent px-[14px] font-[var(--font-body)] text-[13px] font-semibold transition-colors hover:bg-[#3A2A1E] hover:text-[#F2E4CA]"
             style={{ color: '#A89880' }}
           >
-            Settings
+            Ayarlar
           </Link>
           {allCompleted && t.status !== 'completed' && (
-            <form
-              action={async () => {
-                'use server';
-                await advanceRound(id);
-              }}
-            >
-              <button
-                type="submit"
-                className="inline-flex h-8 items-center gap-2 rounded-[6px] border bg-transparent px-[14px] font-[var(--font-body)] text-[13px] font-semibold transition-colors hover:bg-[rgba(232,93,46,0.08)]"
-                style={{ borderColor: '#E85D2E', color: '#E85D2E' }}
-              >
-                {t.status === 'league' &&
+            <AdvanceRoundButton
+              tournamentId={id}
+              allCompleted={allCompleted}
+              label={
+                t.status === 'league' &&
                 t.current_round !== null &&
                 t.league_rounds !== null &&
                 t.current_round >= t.league_rounds
-                  ? 'Seed elimination'
+                  ? 'Elemeyi başlat'
                   : t.current_round_type === 'elimination'
-                    ? 'Advance bracket'
-                    : `Pair round ${(t.current_round ?? 0) + 1}`}
-                <ArrowRight size={14} strokeWidth={1.75} />
-              </button>
-            </form>
+                    ? "Bracket'i ilerlet"
+                    : `${(t.current_round ?? 0) + 1}. tur eşle`
+              }
+            />
           )}
           <Link
             href={`/admin/t/${id}/players`}
@@ -267,7 +261,7 @@ export default async function AdminTournamentView({
             style={{ background: '#E85D2E', color: '#F2E4CA' }}
           >
             <Plus size={14} strokeWidth={2} />
-            New match
+            Yeni maç
           </Link>
         </div>
       </header>
@@ -276,35 +270,35 @@ export default async function AdminTournamentView({
         {/* Stat tiles */}
         <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-4">
           <StatTile
-            label="active matches"
+            label="aktif maçlar"
             value={String(liveCount)}
             delta={
               liveCount > 0
-                ? `${liveCount} pod${liveCount === 1 ? '' : 's'} on the floor`
-                : 'no live pods'
+                ? `sahada ${liveCount} masa`
+                : 'canlı masa yok'
             }
             live={liveCount > 0}
           />
           <StatTile
-            label="concluded today"
+            label="bugün biten"
             value={String(concludedToday.length)}
             delta={
               concludedToday.length > 0
-                ? `avg ${avgDuration}`
-                : 'quiet so far'
+                ? `ort ${avgDuration}`
+                : 'şimdilik sessiz'
             }
           />
           <StatTile
-            label="players on deck"
+            label="oyuncular"
             value={String(t.total_players)}
             delta={
               t.status === 'elimination'
-                ? `top ${t.elimination_count} advanced`
-                : 'swiss league'
+                ? `top ${t.elimination_count} geçti`
+                : 'swiss lig'
             }
           />
           <StatTile
-            label="round"
+            label="tur"
             value={
               t.status === 'elimination'
                 ? `E${t.current_round ?? 1}`
@@ -312,8 +306,8 @@ export default async function AdminTournamentView({
             }
             delta={
               t.status === 'elimination'
-                ? `single elim · ${t.elimination_count} players`
-                : `swiss · ${t.total_players} players`
+                ? `tek eleme · ${t.elimination_count} oyuncu`
+                : `swiss · ${t.total_players} oyuncu`
             }
           />
         </div>
@@ -321,8 +315,8 @@ export default async function AdminTournamentView({
         {/* Setup empty state */}
         {t.status === 'setup' && (
           <EmptyBlock
-            title="Not yet started"
-            body="Register players and start the tournament to open pod play."
+            title="Henüz başlamadı"
+            body="Masaları açmak için oyuncuları kaydet ve turnuvayı başlat."
             action={
               <div className="flex gap-2">
                 <Link
@@ -330,14 +324,14 @@ export default async function AdminTournamentView({
                   className="inline-flex h-8 items-center gap-2 rounded-[6px] border px-[14px] font-[var(--font-body)] text-[13px] font-semibold"
                   style={{ borderColor: '#E85D2E', color: '#E85D2E' }}
                 >
-                  Manage roster
+                  Oyuncuları yönet
                 </Link>
                 <Link
                   href={`/admin/t/${id}/seat`}
                   className="inline-flex h-8 items-center gap-2 rounded-[6px] px-[14px] font-[var(--font-body)] text-[13px] font-semibold"
                   style={{ background: '#E85D2E', color: '#F2E4CA' }}
                 >
-                  Start tournament <ArrowRight size={14} strokeWidth={2} />
+                  Turnuvayı başlat <ArrowRight size={14} strokeWidth={2} />
                 </Link>
               </div>
             }
@@ -352,16 +346,16 @@ export default async function AdminTournamentView({
                 className="m-0 font-[var(--font-display)] text-[22px]"
                 style={{ color: '#F2E4CA', fontWeight: 600 }}
               >
-                Live pods{' '}
+                Canlı masalar{' '}
                 <span className="italic" style={{ color: '#F4B942' }}>
-                  — now playing
+                  — şu an oynanıyor
                 </span>
               </h2>
               <span
                 className="font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em]"
                 style={{ color: '#A89880' }}
               >
-                {liveTables.length} live · {concludedThisRound.length} concluded
+                {liveTables.length} canlı · {concludedThisRound.length} tamamlandı
               </span>
             </div>
             {liveTables.length > 0 ? (
@@ -380,17 +374,17 @@ export default async function AdminTournamentView({
               </div>
             ) : concludedThisRound.length > 0 ? (
               <EmptyBlock
-                title="Round complete"
+                title="Tur tamamlandı"
                 body={
                   allCompleted
-                    ? 'Advance to the next round when ready.'
-                    : 'Waiting on the remaining pods.'
+                    ? 'Hazır olduğunda bir sonraki tura geç.'
+                    : 'Kalan masalar bekleniyor.'
                 }
               />
             ) : (
               <EmptyBlock
-                title="No pods on the floor"
-                body="Pair a round to kick off live play."
+                title="Sahada masa yok"
+                body="Canlı oynatmak için bir tur eşleyin."
               />
             )}
           </section>
@@ -404,16 +398,16 @@ export default async function AdminTournamentView({
                 className="m-0 font-[var(--font-display)] text-[22px]"
                 style={{ color: '#F2E4CA', fontWeight: 600 }}
               >
-                This round{' '}
+                Bu tur{' '}
                 <span className="italic" style={{ color: '#F4B942' }}>
-                  — concluded
+                  — tamamlandı
                 </span>
               </h2>
               <span
                 className="font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em]"
                 style={{ color: '#A89880' }}
               >
-                {concludedThisRound.length} pod{concludedThisRound.length === 1 ? '' : 's'}
+                {concludedThisRound.length} masa
               </span>
             </div>
             <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
@@ -538,8 +532,8 @@ function MatchCard({
             />
           )}
           {live
-            ? `LIVE · pod ${mt.table_number}`
-            : `pod ${mt.table_number} · ${formatConcludedTime(mt.completed_at)}`}
+            ? `CANLI · masa ${mt.table_number}`
+            : `masa ${mt.table_number} · ${formatConcludedTime(mt.completed_at)}`}
         </div>
         {live && (
           <span
@@ -581,7 +575,7 @@ function MatchCard({
                 className="flex-1 font-[var(--font-body)] text-[14px]"
                 style={{ color: '#F2E4CA' }}
               >
-                {p.player?.name ?? 'Seat open'}
+                {p.player?.name ?? 'Boş koltuk'}
               </span>
               <span
                 className="font-[var(--font-mono)] text-[13px] tabular-nums"
@@ -606,7 +600,7 @@ function MatchCard({
             className="inline-flex h-8 flex-1 items-center justify-center gap-2 rounded-[6px] border px-3 font-[var(--font-body)] text-[13px] font-semibold transition-colors hover:bg-[rgba(232,93,46,0.08)]"
             style={{ borderColor: '#E85D2E', color: '#E85D2E' }}
           >
-            <Play size={13} strokeWidth={2} /> Enter score
+            <Play size={13} strokeWidth={2} /> Skor gir
           </Link>
         ) : (
           <Link
@@ -614,7 +608,7 @@ function MatchCard({
             className="inline-flex h-8 flex-1 items-center justify-center gap-2 rounded-[6px] bg-transparent px-3 font-[var(--font-body)] text-[13px] transition-colors hover:bg-[#3A2A1E] hover:text-[#F2E4CA]"
             style={{ color: '#A89880' }}
           >
-            <CheckCircle2 size={13} strokeWidth={1.75} /> Review
+            <CheckCircle2 size={13} strokeWidth={1.75} /> İncele
           </Link>
         )}
         <Link
@@ -622,7 +616,7 @@ function MatchCard({
           className="inline-flex h-8 items-center justify-center gap-2 rounded-[6px] bg-transparent px-3 font-[var(--font-body)] text-[13px] transition-colors hover:bg-[#3A2A1E] hover:text-[#F2E4CA]"
           style={{ color: '#A89880' }}
         >
-          <MapIcon size={13} strokeWidth={1.75} /> Map
+          <MapIcon size={13} strokeWidth={1.75} /> Harita
         </Link>
       </div>
     </div>

@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Shell } from '@/components/layout/Shell';
 import { getServerClient } from '@/lib/supabase/server';
+import { isAuthenticated } from '@/lib/auth/session';
 import { adminLogout } from '@/app/actions/admin';
 import { Plus, ArrowRight } from 'lucide-react';
 
@@ -72,12 +74,13 @@ function formatElapsed(startedAt: string | null): string {
 }
 
 function formatConcludedTime(completedAt: string | null): string {
-  if (!completedAt) return 'concluded';
+  if (!completedAt) return 'biten';
   const d = new Date(completedAt);
-  return `concluded ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `biten ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 export default async function AdminDashboard() {
+  if (!(await isAuthenticated())) redirect('/admin/login');
   const sb = getServerClient();
 
   // All tournaments, newest first
@@ -193,14 +196,14 @@ export default async function AdminDashboard() {
   })();
 
   // Subtitle eyebrow for the top bar
-  const weekday = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const weekday = new Date().toLocaleDateString('tr-TR', { weekday: 'long' });
   const eyebrow = focus
-    ? `${weekday.toLowerCase()} · ${focus.total_players} players · ${currentTables.length} pods`
-    : `${weekday.toLowerCase()} · tournament director`;
+    ? `${weekday.toLowerCase()} · ${focus.total_players} oyuncu · ${currentTables.length} masa`
+    : `${weekday.toLowerCase()} · turnuva yöneticisi`;
   const heroTitle = focus
     ? focus.status === 'elimination'
-      ? `Elimination · round ${focus.current_round ?? 1}`
-      : `Round ${focus.current_round ?? 1}`
+      ? `Eleme · tur ${focus.current_round ?? 1}`
+      : `Tur ${focus.current_round ?? 1}`
     : 'Admin';
 
   const sidebarFocus = focus
@@ -215,7 +218,7 @@ export default async function AdminDashboard() {
     : null;
 
   return (
-    <Shell tournament={sidebarFocus} liveCount={liveCount}>
+    <Shell variant="admin" tournament={sidebarFocus} liveCount={liveCount}>
       {/* Top bar */}
       <header
         className="flex items-end justify-between gap-5 border-b px-9 pb-5 pt-7"
@@ -246,7 +249,7 @@ export default async function AdminDashboard() {
               className="inline-flex h-8 items-center gap-2 rounded-[6px] bg-transparent px-[14px] font-[var(--font-body)] text-[13px] font-semibold transition-colors hover:bg-[#3A2A1E] hover:text-[#F2E4CA]"
               style={{ color: '#A89880' }}
             >
-              Sign out
+              Çıkış
             </button>
           </form>
           {focus && focus.status === 'league' ? (
@@ -258,7 +261,7 @@ export default async function AdminDashboard() {
                 color: '#E85D2E',
               }}
             >
-              Pair round {(focus.current_round ?? 0) + 1}
+              {(focus.current_round ?? 0) + 1}. tur eşle
             </Link>
           ) : null}
           <Link
@@ -271,7 +274,7 @@ export default async function AdminDashboard() {
             }}
           >
             <Plus size={14} strokeWidth={2} />
-            New tournament
+            Yeni turnuva
           </Link>
         </div>
       </header>
@@ -280,37 +283,37 @@ export default async function AdminDashboard() {
         {/* Stat tiles */}
         <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-4">
           <StatTile
-            label="active matches"
+            label="aktif maçlar"
             value={String(liveCount)}
             delta={
               liveCount > 0
-                ? `${liveCount} pod${liveCount === 1 ? '' : 's'} on the floor`
-                : 'no live pods'
+                ? `sahada ${liveCount} masa`
+                : 'canlı masa yok'
             }
             live={liveCount > 0}
           />
           <StatTile
-            label="concluded today"
+            label="bugün biten"
             value={String(concludedToday.length)}
             delta={
               concludedToday.length > 0
-                ? `avg ${avgDuration}`
-                : 'quiet so far'
+                ? `ort ${avgDuration}`
+                : 'şimdilik sessiz'
             }
           />
           <StatTile
-            label="players on deck"
+            label="oyuncular"
             value={String(totalPlayers)}
             delta={
               focus
                 ? focus.status === 'elimination'
-                  ? 'single elim · top cut'
-                  : 'swiss league'
-                : `${all.length} tournament${all.length === 1 ? '' : 's'}`
+                  ? 'tek eleme · cutoff'
+                  : 'swiss lig'
+                : `${all.length} turnuva`
             }
           />
           <StatTile
-            label="round"
+            label="tur"
             value={
               focus
                 ? focus.status === 'elimination'
@@ -320,8 +323,8 @@ export default async function AdminDashboard() {
             }
             delta={
               focus
-                ? `${focus.status === 'elimination' ? 'elimination' : 'swiss'} · ${focus.total_players} players`
-                : `${active.length} live · ${setup.length} setup`
+                ? `${focus.status === 'elimination' ? 'eleme' : 'swiss'} · ${focus.total_players} oyuncu`
+                : `${active.length} canlı · ${setup.length} kurulum`
             }
           />
         </div>
@@ -334,19 +337,19 @@ export default async function AdminDashboard() {
                 className="m-0 font-[var(--font-display)] text-[22px]"
                 style={{ color: '#F2E4CA', fontWeight: 600 }}
               >
-                Live pods{' '}
+                Canlı masalar{' '}
                 <span
                   className="italic"
                   style={{ color: '#F4B942' }}
                 >
-                  — now playing
+                  — şu an oynanıyor
                 </span>
               </h2>
               <span
                 className="font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em]"
                 style={{ color: '#A89880' }}
               >
-                {liveTables.length} live · {concludedThisRound.length} concluded
+                {liveTables.length} canlı · {concludedThisRound.length} tamamlandı
               </span>
             </div>
             {liveTables.length > 0 ? (
@@ -365,8 +368,8 @@ export default async function AdminDashboard() {
               </div>
             ) : (
               <EmptyBlock
-                title="No pods on the floor"
-                body="Pair a round to kick off live play."
+                title="Sahada masa yok"
+                body="Canlı oynatmak için bir tur eşleyin."
               />
             )}
           </section>
@@ -380,7 +383,7 @@ export default async function AdminDashboard() {
                 className="m-0 font-[var(--font-display)] text-[22px]"
                 style={{ color: '#F2E4CA', fontWeight: 600 }}
               >
-                Recently concluded
+                Son biten maçlar
               </h2>
             </div>
             <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
@@ -406,33 +409,33 @@ export default async function AdminDashboard() {
               className="m-0 font-[var(--font-display)] text-[22px]"
               style={{ color: '#F2E4CA', fontWeight: 600 }}
             >
-              Tournaments{' '}
+              Turnuvalar{' '}
               <span
                 className="italic"
                 style={{ color: '#F4B942' }}
               >
-                — all rooms
+                — tüm salonlar
               </span>
             </h2>
             <span
               className="font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em]"
               style={{ color: '#A89880' }}
             >
-              {active.length} live · {setup.length} setup · {completed.length} archived
+              {active.length} canlı · {setup.length} kurulum · {completed.length} arşiv
             </span>
           </div>
 
           {all.length === 0 ? (
             <EmptyBlock
-              title="No tournaments yet"
-              body="Create the first one to open the hall."
+              title="Henüz turnuva yok"
+              body="Salonu açmak için ilkini oluştur."
               action={
                 <Link
                   href="/admin/new"
                   className="inline-flex h-8 items-center gap-2 rounded-[6px] px-[14px] font-[var(--font-body)] text-[13px] font-semibold"
                   style={{ background: '#E85D2E', color: '#F2E4CA' }}
                 >
-                  <Plus size={14} strokeWidth={2} /> New tournament
+                  <Plus size={14} strokeWidth={2} /> Yeni turnuva
                 </Link>
               }
             />
@@ -558,8 +561,8 @@ export default async function AdminDashboard() {
               />
             )}
             {live
-              ? `LIVE · pod ${mt.table_number}`
-              : `pod ${mt.table_number} · ${formatConcludedTime(mt.completed_at)}`}
+              ? `CANLI · masa ${mt.table_number}`
+              : `masa ${mt.table_number} · ${formatConcludedTime(mt.completed_at)}`}
           </div>
           {live && (
             <span
@@ -602,7 +605,7 @@ export default async function AdminDashboard() {
                   className="flex-1 font-[var(--font-body)] text-[14px]"
                   style={{ color: '#F2E4CA' }}
                 >
-                  {p.player?.name ?? 'Seat open'}
+                  {p.player?.name ?? 'Boş koltuk'}
                 </span>
                 <span
                   className="font-[var(--font-mono)] text-[13px] tabular-nums"
@@ -636,12 +639,12 @@ export default async function AdminDashboard() {
           : 'live';
     const label =
       t.status === 'league'
-        ? `Round ${t.current_round ?? 1}/${t.league_rounds ?? 0}`
+        ? `Tur ${t.current_round ?? 1}/${t.league_rounds ?? 0}`
         : t.status === 'elimination'
-          ? `Elim · ${t.current_round ?? 1}`
+          ? `Eleme · ${t.current_round ?? 1}`
           : t.status === 'completed'
-            ? 'Concluded'
-            : 'Setup';
+            ? 'Tamamlandı'
+            : 'Kurulum';
     return (
       <Link
         href={`/admin/t/${t.id}`}
@@ -687,7 +690,7 @@ export default async function AdminDashboard() {
             className="font-[var(--font-mono)] text-[11px] tabular-nums"
             style={{ color: '#A89880' }}
           >
-            {t.total_players} players
+            {t.total_players} oyuncu
           </span>
         </div>
         <h3
@@ -700,7 +703,7 @@ export default async function AdminDashboard() {
           className="mt-auto flex items-center gap-1.5 font-[var(--font-body)] text-[13px]"
           style={{ color: '#A89880' }}
         >
-          Open console
+          Konsolu aç
           <ArrowRight
             size={14}
             strokeWidth={1.75}

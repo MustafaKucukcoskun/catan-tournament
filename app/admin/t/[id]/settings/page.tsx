@@ -3,12 +3,14 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { getServerClient } from '@/lib/supabase/server';
+import { isAuthenticated } from '@/lib/auth/session';
 import { notFound, redirect } from 'next/navigation';
 import { deleteTournament, renameTournament } from '@/app/actions/tournament';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage({ params }: { params: Promise<{ id: string }> }) {
+  if (!(await isAuthenticated())) redirect('/admin/login');
   const { id } = await params;
   const sb = getServerClient();
   const { data: t } = await sb.from('tournaments').select('*').eq('id', id).single();
