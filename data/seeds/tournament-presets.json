@@ -1,0 +1,7 @@
+[
+  { "name": "Tournament Preset 1 (Balanced)", "seed": "preset-01-balanced", "source": "Community" },
+  { "name": "Tournament Preset 2 (Wheat-Rich)", "seed": "preset-02-wheat", "source": "Community" },
+  { "name": "Tournament Preset 3 (Ore-Strategic)", "seed": "preset-03-ore", "source": "Community" },
+  { "name": "Tournament Preset 4 (Fair-Ports)", "seed": "preset-04-fairports", "source": "Community" },
+  { "name": "Tournament Preset 5 (CWC-Like)", "seed": "preset-05-cwc", "source": "CWC" }
+]
