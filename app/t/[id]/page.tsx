@@ -40,11 +40,11 @@ function formatShortDateTR(iso: string | null | undefined): string {
 
 function timeOfDay(): string {
   const h = new Date().getHours();
-  if (h < 6)  return 'late night';
-  if (h < 12) return 'morning session';
-  if (h < 17) return 'afternoon session';
-  if (h < 22) return 'evening session';
-  return 'late evening';
+  if (h < 6)  return 'gece geç saatler';
+  if (h < 12) return 'sabah oturumu';
+  if (h < 17) return 'öğleden sonra oturumu';
+  if (h < 22) return 'akşam oturumu';
+  return 'gece oturumu';
 }
 
 // Extracted outside the component so the purity lint rule never applies.
@@ -106,7 +106,7 @@ export default async function TournamentHome({ params, searchParams }: Props) {
   const tabs = [
     {
       key: 'leaderboard',
-      label: 'Leaderboard',
+      label: 'Sıralama',
       href: `/t/${id}?tab=leaderboard`,
       count: rows.length || undefined,
     },
@@ -134,27 +134,27 @@ export default async function TournamentHome({ params, searchParams }: Props) {
   // Phase copy — plain phase label + italic flourish kept separate so we
   // never run into brittle string-split code for the headline.
   let phaseLabel = 'Kurulum';
-  let phaseItalic = 'in preparation';
+  let phaseItalic = 'hazırlık aşamasında';
   if (t.status === 'league' && t.current_round && t.league_rounds) {
     phaseLabel = `Lig turu ${t.current_round}/${t.league_rounds}`;
-    phaseItalic = 'the league round';
+    phaseItalic = 'lig turu';
   } else if (t.status === 'elimination') {
     phaseLabel = `Eleme · tur ${t.current_round ?? 1}`;
-    phaseItalic = 'the pressure round';
+    phaseItalic = 'baskı turu';
   } else if (t.status === 'completed') {
     phaseLabel = 'Tamamlandı';
-    phaseItalic = 'final standings';
+    phaseItalic = 'final sıralama';
   }
 
   // Session hints to thicken the stats strip with data density
   const sinceLabel = t.started_at ? formatShortDateTR(t.started_at) : undefined;
   const statsHints = {
     players: `${players?.length ?? 0} kayıtlı`,
-    active: activeMatches > 0 ? 'now playing' : 'hall quiet',
-    finished: finished > 0 ? `avg ${avgVp.toFixed(1)} VP` : '—',
-    avgVp: finished > 0 ? `across ${finished} ${finished === 1 ? 'match' : 'matches'}` : 'no data yet',
-    round: t.status === 'league' ? 'swiss' : t.status === 'elimination' ? 'single elim' : '—',
-    duration: sinceLabel ? `since ${sinceLabel}` : undefined,
+    active: activeMatches > 0 ? 'şu an oynanıyor' : 'salon sessiz',
+    finished: finished > 0 ? `ort ${avgVp.toFixed(1)} VP` : '—',
+    avgVp: finished > 0 ? `${finished} maç üzerinden` : 'henüz veri yok',
+    round: t.status === 'league' ? 'swiss' : t.status === 'elimination' ? 'tek eleme' : '—',
+    duration: sinceLabel ? `${sinceLabel} itibariyle` : undefined,
   };
 
   // Precompute the elapsed-duration label on the server so the React 19
@@ -328,7 +328,7 @@ export default async function TournamentHome({ params, searchParams }: Props) {
                     {activeMatches === 1 ? 'masa canlı' : 'masa canlı'}
                   </>
                 ) : (
-                  <span className="italic">no live pods</span>
+                  <span className="italic">canlı masa yok</span>
                 )}
               </span>
 
@@ -391,13 +391,13 @@ export default async function TournamentHome({ params, searchParams }: Props) {
               <Leaderboard
                 rows={rows}
                 skipTop={rows.length >= 3 ? 3 : 0}
-                title="the field"
+                title="saha"
                 titleStyle="italic"
                 roundLabel={
                   rows.length >= 3 && rows.length > 3
-                    ? `positions 4 — ${rows.length}`
+                    ? `sıralama 4 — ${rows.length}`
                     : rows.length > 0
-                      ? `${rows.length} ${rows.length === 1 ? 'player' : 'players'}`
+                      ? `${rows.length} oyuncu`
                       : undefined
                 }
               />
@@ -406,15 +406,15 @@ export default async function TournamentHome({ params, searchParams }: Props) {
 
           {tab === 'active' && (
             <LiveTables
-              title="on the tables"
-              eyebrow={activeMatches > 0 ? `${activeMatches} live` : undefined}
+              title="masalarda"
+              eyebrow={activeMatches > 0 ? `${activeMatches} canlı` : undefined}
               tables={activeTables}
             />
           )}
 
           {tab === 'finished' && (
             <LiveTables
-              title="concluded matches"
+              title="biten maçlar"
               variant="concluded"
               tables={finishedTables}
             />

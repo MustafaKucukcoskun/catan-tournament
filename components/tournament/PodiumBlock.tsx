@@ -171,7 +171,7 @@ function PodiumStandFirst({ row }: { row?: LeaderboardRow }) {
             whiteSpace: 'nowrap',
           }}
         >
-          {'★  First place  ★'}
+          {'★  Birinci  ★'}
         </div>
 
         <PlayerAvatar seatCode={row.seatCode} size={104} halo="gold-winner" />
@@ -222,7 +222,7 @@ function PodiumStandFirst({ row }: { row?: LeaderboardRow }) {
             marginTop: 10,
           }}
         >
-          {row.wins} wins · {row.matchesPlayed} played
+          {row.wins} galibiyet · {row.matchesPlayed} oynanan
         </div>
       </div>
 

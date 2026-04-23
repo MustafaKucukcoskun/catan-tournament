@@ -37,11 +37,11 @@ function formatShortDate(iso: string | null | undefined): string {
 
 function timeOfDayGreeting(): string {
   const h = new Date().getHours();
-  if (h < 6)  return 'late night';
-  if (h < 12) return 'morning session';
-  if (h < 17) return 'afternoon session';
-  if (h < 22) return 'evening session';
-  return 'late evening';
+  if (h < 6)  return 'gece geç saatler';
+  if (h < 12) return 'sabah oturumu';
+  if (h < 17) return 'öğleden sonra oturumu';
+  if (h < 22) return 'akşam oturumu';
+  return 'gece oturumu';
 }
 
 export default async function HubHome() {
@@ -121,12 +121,12 @@ export default async function HubHome() {
               lineHeight: 1.04,
             }}
           >
-            Tonight&apos;s board is set,{' '}
+            Tahta kuruldu,{' '}
             <em
               className="text-[var(--color-accent-gold)]"
               style={{ fontWeight: 400, fontStyle: 'italic' }}
             >
-              the night is ours
+              gece bizim
             </em>
           </h1>
 
@@ -149,10 +149,10 @@ export default async function HubHome() {
                   <span className="font-[var(--font-mono)] tabular-nums text-[var(--color-accent-live)]">
                     {activeCount}
                   </span>
-                  {activeCount === 1 ? 'tournament live' : 'tournaments live'}
+                  {activeCount === 1 ? 'turnuva canlı' : 'turnuva canlı'}
                 </>
               ) : (
-                <span className="italic">no live tournaments — quiet hall tonight</span>
+                <span className="italic">canlı turnuva yok — salon bu gece sessiz</span>
               )}
             </span>
 
@@ -166,7 +166,7 @@ export default async function HubHome() {
                   <span className="font-[var(--font-mono)] tabular-nums text-[var(--color-fg-primary)]">
                     {finishedCount}
                   </span>{' '}
-                  recently concluded
+                  son biten
                 </span>
               </>
             )}
@@ -177,10 +177,10 @@ export default async function HubHome() {
         {activeCount > 0 ? (
           <section className="relative">
             <SectionHead
-              eyebrow="now playing"
-              title="Live tournaments"
-              italic="— walk in"
-              rightLabel={`${activeCount} ${activeCount === 1 ? 'room' : 'rooms'}`}
+              eyebrow="şu an oynanıyor"
+              title="Canlı turnuvalar"
+              italic="— içeri gir"
+              rightLabel={`${activeCount} salon`}
             />
             <div
               className="relative overflow-hidden rounded-[var(--radius-lg)]"
@@ -215,10 +215,10 @@ export default async function HubHome() {
         {finishedCount > 0 && (
           <section>
             <SectionHead
-              eyebrow="archive"
-              title="Recently concluded"
-              italic="— look back"
-              rightLabel={<Link href="/archive" className="text-[var(--color-accent-ember)] hover:underline">full archive →</Link>}
+              eyebrow="arşiv"
+              title="Son biten maçlar"
+              italic="— geriye bak"
+              rightLabel={<Link href="/archive" className="text-[var(--color-accent-ember)] hover:underline">tam arşiv →</Link>}
             />
             <div
               className="flex flex-col"
@@ -390,7 +390,7 @@ function FeaturedTournamentCard({
     : t.current_round && t.league_rounds
       ? `Lig turu ${t.current_round}/${t.league_rounds}`
       : 'Lig turu';
-  const italic = isElim ? 'pressure round' : 'league round';
+  const italic = isElim ? 'baskı turu' : 'lig turu';
 
   return (
     <Link
@@ -479,18 +479,18 @@ function FeaturedTournamentCard({
           borderTop: '1px solid rgba(244,185,66,0.08)',
         }}
       >
-        <FooterStat label="players" value={t.total_players} />
+        <FooterStat label="oyuncu" value={t.total_players} />
         {t.started_at && (
           <>
             <span aria-hidden style={{ color: 'var(--color-fg-subtle)' }}>·</span>
-            <FooterStat label="since" value={formatShortDate(t.started_at)} />
+            <FooterStat label="başlangıç" value={formatShortDate(t.started_at)} />
           </>
         )}
         <span
           className="ml-auto font-[var(--font-mono)] text-[var(--color-fg-muted)] group-hover:text-[var(--color-accent-ember)] transition-colors"
           style={{ fontSize: 13 }}
         >
-          enter →
+          gir →
         </span>
       </footer>
     </Link>
@@ -553,7 +553,7 @@ function EmptyState() {
           fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.18em',
         }}
       >
-        quiet hall
+        sessiz salon
       </div>
       <h3
         className="relative m-0 font-[var(--font-display)] text-[var(--color-fg-primary)]"
@@ -561,13 +561,13 @@ function EmptyState() {
           fontSize: 28, fontWeight: 600, letterSpacing: '-0.01em',
         }}
       >
-        No tournaments are running right now.
+        Şu an aktif turnuva yok.
       </h3>
       <p
         className="relative mt-2 font-[var(--font-display)] italic text-[var(--color-fg-muted)] max-w-[420px]"
         style={{ fontSize: 15 }}
       >
-        The lanterns are warm, the boards are clean — new rounds will appear here as tournament directors open them.
+        Fenerler sıcak, tahtalar temiz — yeni turlar burada açılacak.
       </p>
       <Link
         href="/archive"
@@ -578,7 +578,7 @@ function EmptyState() {
           letterSpacing: '0.14em',
         }}
       >
-        see the archive <span aria-hidden>→</span>
+        arşivi gör <span aria-hidden>→</span>
       </Link>
     </section>
   );

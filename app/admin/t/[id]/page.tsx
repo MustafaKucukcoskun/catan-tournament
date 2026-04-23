@@ -293,7 +293,7 @@ export default async function AdminTournamentView({
             value={String(t.total_players)}
             delta={
               t.status === 'elimination'
-                ? `top ${t.elimination_count} geçti`
+                ? `en üst ${t.elimination_count} geçti`
                 : 'swiss lig'
             }
           />

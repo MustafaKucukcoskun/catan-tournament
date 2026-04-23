@@ -49,7 +49,7 @@ export function LiveTables({
           fontSize: 14,
         }}
       >
-        No matches to show right now.
+        Şu anda gösterilecek maç yok.
       </div>
     );
   }
@@ -140,7 +140,7 @@ function LiveTableCard({
           }}
         >
           {isLive && <LiveDot size={6} />}
-          {isLive ? `LIVE · pod ${table.tableNumber}` : `pod ${table.tableNumber} · concluded`}
+          {isLive ? `CANLI · masa ${table.tableNumber}` : `masa ${table.tableNumber} · biten`}
         </span>
         <LiveTimer startedAt={table.startedAt} tick={isLive} />
       </header>
