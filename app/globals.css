@@ -74,3 +74,14 @@
   .glow-winner { box-shadow: 0 0 32px rgba(244, 185, 66, 0.50); }
   .shadow-live { box-shadow: 0 0 0 1px var(--color-accent-live), 0 0 20px rgba(255, 107, 53, 0.35); }
 }
+
+@keyframes breath {
+  0%, 100% { transform: scale(1.000); }
+  50%      { transform: scale(1.005); }
+}
+@keyframes pulse-ember {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1.0; }
+}
+.animate-breath { animation: breath 3s ease-in-out infinite; }
+.animate-pulse-ember { animation: pulse-ember 1.2s ease-in-out infinite; }
