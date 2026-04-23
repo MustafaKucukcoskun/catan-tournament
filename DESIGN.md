@@ -70,10 +70,12 @@ eyebrow: 11px uppercase mono, 0.12em tracking
 
 ```css
 :root {
-  /* Background — WARM DARK (brown-based, not charcoal) */
-  --bg-deep:     #1A1208;   /* deep coffee bean, page bg */
-  --bg-surface:  #2A1E14;   /* cards, panels */
-  --bg-elevated: #3A2A1E;   /* hover, modal backdrop, active zones */
+  /* Background — WARM DARK (brown-based, LIFTED v3 for less gloom) */
+  --bg-deep:      #1F1409;   /* deep coffee bean (slightly lighter than v2) */
+  --bg-surface:   #2F2217;   /* cards, panels */
+  --bg-elevated:  #42311F;   /* hover, modal backdrop, active zones */
+  --bg-highlight: #5A4228;   /* NEW — podium area, spotlight cards,
+                                 hero band, featured live pods */
 
   /* Foreground — lantern-warm on dark */
   --fg-primary:  #F2E4CA;   /* warm cream, primary text */
@@ -86,13 +88,13 @@ eyebrow: 11px uppercase mono, 0.12em tracking
   --accent-gold:     #F4B942;  /* bright mustard gold — podium, highlights */
   --accent-seafoam:  #5EA88F;  /* muted seafoam — rare calming moments */
 
-  /* Resource colors — saturated & alive */
-  --resource-wood:    #3B7A52;  /* vivid forest */
-  --resource-sheep:   #8CC070;  /* meadow green */
-  --resource-wheat:   #E6C64A;  /* golden wheat */
-  --resource-brick:   #C8562A;  /* warm terracotta */
-  --resource-ore:     #6B7280;  /* slate */
-  --resource-desert:  #E0C28E;  /* sand */
+  /* Resource colors — MORE SATURATED v3 (less gloomy) */
+  --resource-wood:    #4A8D5F;  /* vivid forest, brightened */
+  --resource-sheep:   #9AD380;  /* meadow green, lifted */
+  --resource-wheat:   #F2D250;  /* golden wheat, sunnier */
+  --resource-brick:   #D96638;  /* warm terracotta, more alive */
+  --resource-ore:     #7B8593;  /* slate, slightly bluer */
+  --resource-desert:  #E8CC9C;  /* sand, warmer */
 
   /* Semantic */
   --ok:     #6EE787;
@@ -156,14 +158,25 @@ eyebrow: 11px uppercase mono, 0.12em tracking
 }
 ```
 
-**Accent discipline (RELAXED from v1):**
+**Accent discipline (RELAXED v3 — less restrictive for warmth):**
 Up to 3 accents can cohabit per screen — `--accent-ember` (primary
 emphasis), `--accent-live` (LIVE pulses only), `--accent-gold` (podium
-+ achievements). Most chrome stays neutral; only meaningful elements
-pick up an accent.
++ achievements). Most chrome stays neutral; meaningful elements pick
+up an accent. **Stat tile icons that indicate state (active, finished,
+ranked) CAN be colored subtly** — a small splash of warmth in the UI
+keeps it from feeling gloomy.
 
 **Resource tokens** remain functional — hex tiles, legend chips,
 sparklines. Never for primary chrome or buttons.
+
+**Background layering** for warmth:
+- Default page: `--bg-deep`
+- Cards: `--bg-surface`
+- Hover / modal / elevated: `--bg-elevated`
+- **Spotlight zones (NEW)**: use `--bg-highlight` for podium area,
+  hero band, featured live pod cards, cinematic final champion reveal.
+  This warmer shade lifts the key moments out of the general darkness
+  without breaking the overall mood.
 
 ---
 
