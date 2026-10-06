@@ -1,85 +1,92 @@
 # Catan Tournament Hub
 
-Tournament management web app for Catan (Settlers of Catan). Supports
-Swiss-style league rounds + 4-player elimination pods, live leaderboard,
-auto-generated Catan maps, admin scoring, public spectator view.
+**Tournament management web app for Catan.** Admins run Swiss-style league rounds followed by 4-player elimination pods. Players and spectators follow a live leaderboard, and every table gets a generated board that follows fairness rules.
 
-## Stack
+<!-- TODO: add a screenshot of the live leaderboard and a generated board, e.g. docs/screenshot.png -->
 
-Next.js 16 · React 19 · Tailwind 4 · Supabase (Postgres + Realtime) ·
-`@supabase/supabase-js` · `react-hexgrid` · `framer-motion` · `seedrandom`
+## Features
 
-## Local development
+- **League rounds:** round 1 is random. Later rounds sort players by total VP and fill 4-player tables from a sliding window, avoiding repeat opponents where possible. Player counts that don't divide by 4 get 3-player tables.
+- **Elimination pods:** seeded from league standings in tiers, so the top seeds land at different tables. Ties at the cut-off line are detected and shown to the admin.
+- **Board generator:** five rules that can be switched on or off per tournament: no adjacent red numbers (6 and 8), no adjacent equal numbers, no adjacent equal resources, a cap on pips per vertex, and no adjacent 2 and 12.
+- **Live views:** leaderboard and table status update through Supabase Realtime. There is a public spectator page and an archive of finished tournaments.
+- **Admin area:** shared admin password checked in constant time, sessions stored as hashed tokens in `httpOnly`, `SameSite=strict` cookies.
 
-### Prerequisites
-- Node.js 20+ (22 recommended)
-- Supabase project (free tier is fine)
-- npm
+## Run locally
 
-### Setup
-1. `npm install`
-2. Copy `.env.local.example` → `.env.local` and fill in:
-   - `NEXT_PUBLIC_SUPABASE_URL` (from Supabase dashboard)
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `ADMIN_PASSWORD` (pick strong, share with admins)
-3. If running against a fresh Supabase project, apply migrations:
-   - `supabase/migrations/00001_schema.sql` (9 tables)
-   - `supabase/migrations/00002_rls.sql` (public read policies)
-   - Enable realtime publication: `alter publication supabase_realtime add table leaderboard_stats, match_tables, table_players, tournaments;`
-4. `npm run dev` → http://localhost:3000
+Requirements: Node.js 20+ (22 recommended) and a Supabase project (the free tier is enough).
 
-### Tests
-- `npm run test` — Vitest in watch mode
-- `npm run test:run` — single-shot (CI)
+```bash
+npm install
+cp .env.local.example .env.local   # fill in the values below
+npm run dev                        # http://localhost:3000
+```
 
-### Build
-- `npm run build` — production build
-- `npm run start` — run production locally
+| Variable | Purpose |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key (public reads) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-side writes, never sent to the browser |
+| `ADMIN_PASSWORD` | Shared password for the admin area |
+
+For a fresh Supabase project, apply the migrations and enable Realtime:
+
+1. `supabase/migrations/00001_schema.sql` (9 tables)
+2. `supabase/migrations/00002_rls.sql` (public read policies)
+3. `alter publication supabase_realtime add table leaderboard_stats, match_tables, table_players, tournaments;`
+
+## Tests
+
+```bash
+npm run test:run    # single run (CI)
+npm run test        # watch mode
+```
+
+42 Vitest tests cover the pure logic: player distribution, league pairing, bracket seeding, tiebreakers, leaderboard recomputation, board generation and validation, and the password check.
+
+## Tech stack
+
+Next.js 16 (App Router, server actions) · React 19 · TypeScript · Tailwind CSS 4 · Supabase (PostgreSQL + Realtime) · `react-hexgrid` · Framer Motion · `seedrandom` · Vitest
+
+## Design decisions
+
+- **Tournament and map logic is plain TypeScript.** `lib/tournament/` and `lib/map/` import nothing from React or Supabase. They are tested directly, and the leaderboard can be recomputed from match results at any time instead of being patched incrementally.
+- **Boards are reproducible.** Every board comes from a seed, so the same seed always rebuilds the same board. That makes it possible to show a board again or debug a rule violation.
+- **Shuffle, then repair.** A random shuffle rarely satisfies all five rules at once. Instead of reshuffling blindly, the generator swaps pairs of hexes and keeps a swap only if it reduces the number of violations. If that does not converge, it starts again from a new shuffle.
+- **Tiebreak order:** total VP, then wins, then VP percentage, then best single game, then head-to-head. If players are still tied at the elimination cut-off, the admin decides.
+
+## Project structure
+
+```
+app/
+  actions/        server actions (tournament, player, match, map, template, admin)
+  admin/          admin pages, guarded by proxy.ts
+  t/[id]/         public tournament view
+  archive/        finished tournaments
+components/       ui primitives, hex map, leaderboard and bracket, admin forms
+lib/
+  tournament/     distribute, pairing, bracket, tiebreaker, recompute
+  map/            constants, neighbors, validator, generator
+  auth/           password check and admin sessions
+  supabase/       client and server wrappers, generated types
+supabase/migrations/   schema and RLS
+tests/                 Vitest unit tests
+```
+
+The visual language (colors, type, motion, anti-patterns) is documented in [`DESIGN.md`](DESIGN.md).
 
 ## Deploy (Vercel)
 
-1. Push to GitHub (this repo).
-2. Import project on vercel.com.
-   - Root directory: `catan/`
-   - Framework preset: Next.js (auto-detected)
-3. Add environment variables in Vercel dashboard:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `ADMIN_PASSWORD`
-4. Deploy.
+1. Import the repository on vercel.com. The framework (Next.js) is detected automatically and the root directory is the repository root.
+2. Add the four environment variables above.
+3. Deploy.
 
-## Architecture
+## Scope notes
 
-- `app/` — Next.js App Router pages
-  - `app/actions/` — server actions (tournament/player/match/map/template/admin)
-  - `app/admin/` — admin-only pages (guarded by `proxy.ts`)
-  - `app/t/[id]/` — public tournament view
-  - `app/archive/` — completed tournaments
-- `components/`
-  - `ui/` — primitives (Button, Card, Badge, Input, Modal, StatTile)
-  - `hex/` — HexTile + HexMap SVG
-  - `tournament/` — Leaderboard, Bracket, PodiumBlock, etc.
-  - `admin/` — admin wizards and forms
-  - `layout/` — Shell + Sidebar
-- `lib/`
-  - `supabase/` — client + server wrappers + generated types
-  - `tournament/` — pure TS: distribute, pairing, bracket, tiebreaker, recompute
-  - `map/` — pure TS: constants, neighbors, validator, generator (constraint-based shuffle + retry + localSwapRepair)
-  - `auth/` — password compare + session management
-- `supabase/migrations/` — schema + RLS
-- `data/seeds/` — preset map metadata
-- `tests/` — Vitest unit tests for pure algorithms
+- Admin auth is a single shared password. Moving to Supabase Auth is straightforward when needed.
+- Hex-by-hex board editing, drag-and-drop seating and multi-language support are planned for v2. The UI is in Turkish for now.
+- Byes are only needed for exactly 5 players, which the tournament format avoids.
 
-## Design system
+## License
 
-See `DESIGN.md` at repo root — the authoritative source for colors, typography, motion, and anti-patterns. Mood: "Catan Night × Live Tournament Energy" (warm-dark, ember accents, kinetic live states).
-
-## MVP Scope Notes
-
-- Admin auth is single shared password (`ADMIN_PASSWORD` env). Supabase Auth migration is trivial when needed.
-- Hex-by-hex manual map editing is v2 — MVP has "regenerate" button only.
-- Player seating drag-drop is v2 — MVP shows assignments read-only.
-- Multi-language support is v2 — MVP is Turkish.
-- Automatic bye handling covered only for N=5 edge case (per spec, "5-kişilik turnuva hiç olmayacak" — kullanıcı talebi).
+[MIT](LICENSE)
